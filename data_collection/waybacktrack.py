@@ -8,7 +8,6 @@ import os
 import urllib.request as request
 import random
 
-from io import StringIO
 
 from lxml import html
 from lxml.html import clean
