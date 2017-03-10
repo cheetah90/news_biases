@@ -1,4 +1,4 @@
-import waybacktrack
+from data_collection import waybacktrack
 
 
 def main():
