@@ -7,12 +7,8 @@ import time
 import os
 import urllib.request as request
 import random
-from math import ceil
 
-try:
-    from cStringIO import StringIO as BytesIO
-except ImportError:
-    from io import BytesIO
+from io import StringIO
 
 from lxml import html
 from lxml.html import clean
@@ -22,6 +18,14 @@ ARCHIVE_DOMAIN = "http://web.archive.org"
 CURR_DIR = os.path.dirname(__file__)
 
 DATASET_DIR = os.path.join(CURR_DIR, '../../dataset/')
+
+
+def write_to_file(current_snapshot_flinks):
+    with open("foxnews_links.txt", 'a') as file:
+        for flink in current_snapshot_flinks:
+            if "htm" in flink and "politics" in flink:
+                file.write(flink[flink.find('http'):])
+                file.write('\n')
 
 
 def archive_domain(domain, year, dir_path=DATASET_DIR,
@@ -106,6 +110,8 @@ def archive_domain(domain, year, dir_path=DATASET_DIR,
 
         curr_snapshot_flinks = get_forwardlink_snapshots(snapshot)
 
+        write_to_file(curr_snapshot_flinks)
+
         forward_links.extend(curr_snapshot_flinks)
 
         if debug:
@@ -124,10 +130,11 @@ def archive_domain(domain, year, dir_path=DATASET_DIR,
     archived_links = []
     duds = []
     for forwardlink in forward_links:
-        if archive(forwardlink, year, dir_path, debug, throttle):
-            archived_links.append(forwardlink)
-        else:
-            duds.append(forwardlink)
+        if 'politics' in forwardlink and 'htm' in forwardlink:
+            if archive(forwardlink, year, dir_path, debug, throttle):
+                archived_links.append(forwardlink)
+            else:
+                duds.append(forwardlink)
 
     if debug:
         print("Number of archived forward links: ", len(archived_links))
@@ -190,8 +197,8 @@ def archive(page, year, dir_path, debug=False, throttle=1):
             print()
 
         try:
-            with open(file_path, 'wb') as f:
-                f.write(BytesIO(html_string).read())
+            with open(file_path, 'w') as f:
+                f.write(html_string)
 
             time.sleep(throttle)
 
