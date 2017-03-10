@@ -7,6 +7,7 @@ import time
 import os
 import urllib.request as request
 import random
+import re
 
 
 from lxml import html
@@ -19,10 +20,21 @@ CURR_DIR = os.path.dirname(__file__)
 DATASET_DIR = os.path.join(CURR_DIR, '../../dataset/')
 
 
+def does_url_match_yyyymmdd(url_string):
+    date_reg_exp = re.compile('\d{4}[/]\d{2}[/]\d{2}')
+    all_matches = date_reg_exp.findall(url_string)
+
+    return True if len(all_matches) > 0 else False
+
+
+def is_url_political_news(url_string):
+    return True if "htm" in url_string and "politics" in url_string and does_url_match_yyyymmdd(url_string) else False
+
+
 def write_to_file(current_snapshot_flinks):
     with open("foxnews_links.txt", 'a') as file:
         for flink in current_snapshot_flinks:
-            if "htm" in flink and "politics" in flink:
+            if is_url_political_news(flink):
                 file.write(flink[flink.find('http'):])
                 file.write('\n')
 
@@ -129,7 +141,7 @@ def archive_domain(domain, year, dir_path=DATASET_DIR,
     archived_links = []
     duds = []
     for forwardlink in forward_links:
-        if 'politics' in forwardlink and 'htm' in forwardlink:
+        if is_url_political_news(forwardlink):
             if archive(forwardlink, year, dir_path, debug, throttle):
                 archived_links.append(forwardlink)
             else:
