@@ -164,7 +164,8 @@ def archive(page, year, dir_path, debug=False, throttle=1):
     if debug:
         print("requesting ", page)
 
-    page_file = page.rsplit('/web/')[1].replace('http://', '').replace('-', '_')
+    #page_file = page.rsplit('/web/')[1].replace('http://', '').replace('-', '_')
+    page_file = page[page.find('http'): ]
     page_file = page_file.replace('/', '_').replace(':', '_').replace('&', '_')
     page_file = page_file.replace('?', '_').replace('*', '_').replace('=', '_')
 
@@ -206,26 +207,23 @@ def archive(page, year, dir_path, debug=False, throttle=1):
     #hack - since I directly donwload the current version. The next if statement does not hold
     page_url = ARCHIVE_DOMAIN + page
 
-    if page_url.startswith(archival_year_spec):
 
+    if debug:
+        print ("saving ", page_url)
+        print()
+
+    try:
+        with open(file_path, 'w') as f:
+            f.write(html_string)
+
+        time.sleep(throttle)
+
+    except IOError as e:
         if debug:
-            print ("saving ", page_url)
-            print()
-
-        try:
-            with open(file_path, 'w') as f:
-                f.write(html_string)
-
-            time.sleep(throttle)
-
-        except IOError as e:
-            if debug:
-                print ("Got error: ", e)
-            return False
-
-        return True
-    else:
+            print ("Got error: ", e)
         return False
+
+    return True
 
 
 def get_forwardlink_snapshots(parent_site):
@@ -241,17 +239,23 @@ def get_forwardlink_snapshots(parent_site):
         print ("Did not get extract links in ", ARCHIVE_DOMAIN + parent_site)
         return []
 
-    # cleaner = html.clean.Cleaner(scripts=True, javascript=True,style=True, kill_tags = ["img"])
-    cleaner = clean.Cleaner(scripts=True, javascript=True, comments=True,
-                            style=True, meta=True, processing_instructions=True, embedded=True,
-                            frames=True, forms=True, kill_tags=["noscript", "iframe", "img"])
+    if 'foxnews' in parent_site:
 
-    parsed_parent_site = cleaner.clean_html(parsed_parent_site)
 
-    # spec archival year
-    # check to see if the archival year of a forwark link
-    # is that of the parent (ie. 2000|2005|2010)
-    all_forwardlinks = parsed_parent_site.xpath('//a[starts-with(@href,"' +
-                                                parent_site[:9] + '")]/@href')
+        cleaner = clean.Cleaner(scripts=True, javascript=True, comments=True,
+                                style=True, meta=True, processing_instructions=True, embedded=True,
+                                frames=True, forms=True, kill_tags=["noscript", "iframe", "img"])
+
+        parsed_parent_site = cleaner.clean_html(parsed_parent_site)
+
+        # spec archival year
+        # check to see if the archival year of a forwark link
+        # is that of the parent (ie. 2000|2005|2010)
+        xpath_expre = '//a[starts-with(@href,"' + parent_site[:9] + '")]/@href'
+        all_forwardlinks = parsed_parent_site.xpath(xpath_expre)
+
+    elif 'cnn' in parent_site:
+        all_forwardlinks = [element.text for element in parsed_parent_site.xpath('//guid')]
+
 
     return all_forwardlinks

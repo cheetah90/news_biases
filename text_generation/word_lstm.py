@@ -14,26 +14,27 @@ from keras.layers import LSTM
 from keras.optimizers import RMSprop
 from keras.utils.data_utils import get_file
 from keras.callbacks import ModelCheckpoint
+from nltk.tokenize import word_tokenize
 import numpy as np
 import random
 import sys
 import string
 
 #path = get_file('nietzsche.txt', origin="https://s3.amazonaws.com/text-datasets/nietzsche.txt")
-path = "cnn_trump.txt"
+path = "cnn_trump_subset.txt"
 text = open(path).read().lower()
 #remove punctuations
 table = str.maketrans({key: None for key in string.punctuation})
 text = text.translate(table)
 #tokenize the string
+tokens = word_tokenize(text)
 
+print('corpus length:', len(tokens))
 
-print('corpus length:', len(text.split(' ')))
-
-chars = sorted(list(set(text)))
-print('total chars:', len(chars))
-char_indices = dict((c, i) for i, c in enumerate(chars))
-indices_char = dict((i, c) for i, c in enumerate(chars))
+tokens = sorted(list(set(tokens)))
+print('total tokens:', len(tokens))
+tokens_indices = dict((c, i) for i, c in enumerate(tokens))
+indices_tokens = dict((i, c) for i, c in enumerate(tokens))
 
 # cut the text in semi-redundant sequences of maxlen characters
 maxlen = 40
@@ -46,19 +47,19 @@ for i in range(0, len(text) - maxlen, step):
 print('nb sequences:', len(sentences))
 
 print('Vectorization...')
-X = np.zeros((len(sentences), maxlen, len(chars)), dtype=np.bool)
-y = np.zeros((len(sentences), len(chars)), dtype=np.bool)
+X = np.zeros((len(sentences), maxlen, len(tokens)), dtype=np.bool)
+y = np.zeros((len(sentences), len(tokens)), dtype=np.bool)
 for i, sentence in enumerate(sentences):
     for t, char in enumerate(sentence):
-        X[i, t, char_indices[char]] = 1
-    y[i, char_indices[next_chars[i]]] = 1
+        X[i, t, tokens_indices[char]] = 1
+    y[i, tokens_indices[next_chars[i]]] = 1
 
 
 # build the model: a single LSTM
 print('Build model...')
 model = Sequential()
-model.add(LSTM(128, input_shape=(maxlen, len(chars))))
-model.add(Dense(len(chars)))
+model.add(LSTM(128, input_shape=(maxlen, len(tokens))))
+model.add(Dense(len(tokens)))
 model.add(Activation('softmax'))
 
 optimizer = RMSprop(lr=0.01)
@@ -98,13 +99,13 @@ for iteration in range(1, 4):
         sys.stdout.write(generated)
 
         for i in range(400):
-            x = np.zeros((1, maxlen, len(chars)))
+            x = np.zeros((1, maxlen, len(tokens)))
             for t, char in enumerate(sentence):
-                x[0, t, char_indices[char]] = 1.
+                x[0, t, tokens_indices[char]] = 1.
 
             preds = model.predict(x, verbose=0)[0]
             next_index = sample(preds, diversity)
-            next_char = indices_char[next_index]
+            next_char = indices_tokens[next_index]
 
             generated += next_char
             sentence = sentence[1:] + next_char

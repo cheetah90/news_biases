@@ -18,10 +18,16 @@ from keras.callbacks import ModelCheckpoint
 import numpy as np
 import random
 import sys
+import string
 
 #path = get_file('nietzsche.txt', origin="https://s3.amazonaws.com/text-datasets/nietzsche.txt")
-path = "cnn_trump.txt"
+path = "cnn_trump_subset.txt"
 text = open(path).read().lower()
+
+#remove punctuations
+table = str.maketrans({key: None for key in string.punctuation})
+text = text.translate(table)
+text.replace("\n", " ")
 print('corpus length:', len(text))
 
 chars = sorted(list(set(text)))
@@ -51,7 +57,7 @@ for i, sentence in enumerate(sentences):
 # build the model: a single LSTM
 print('Build model...')
 model = Sequential()
-model.add(LSTM(128, input_shape=(maxlen, len(chars))))
+model.add(LSTM(256, input_shape=(maxlen, len(chars))))
 model.add(Dense(len(chars)))
 model.add(Activation('softmax'))
 

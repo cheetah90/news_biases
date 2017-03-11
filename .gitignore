@@ -1,3 +1,5 @@
 .idea/
 data_collection/foxnews_links.txt
 data_collection/__pycache__
+data_collection/foxnews/
+data_collection/cnn/
