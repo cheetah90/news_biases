@@ -6,7 +6,7 @@ def main():
     flinks, duds = waybacktrack.archive_domain(domain='www.foxnews.com/politics.html',
                                                year=2017,
                                                dir_path='foxnews/2017',
-                                               percent=10,
+                                               percent=100,
                                                debug=True)
 
 if __name__ == "__main__":

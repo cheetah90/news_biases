@@ -32,7 +32,7 @@ def is_url_political_news(url_string):
 
 
 def write_to_file(current_snapshot_flinks):
-    with open("foxnews_links.txt", 'a') as file:
+    with open("./data_collection/foxnews_links.txt", 'a') as file:
         for flink in current_snapshot_flinks:
             if is_url_political_news(flink):
                 file.write(flink[flink.find('http'):])
@@ -176,16 +176,19 @@ def archive(page, year, dir_path, debug=False, throttle=1):
         return False
 
     try:
-        html_file = request.urlopen(ARCHIVE_DOMAIN + page)
+        #current_download_url = ARCHIVE_DOMAIN + page
+        current_download_url = page[page.find('http'):]
+        #allen: not using the archive since it might not exist
+        html_file = request.urlopen(current_download_url)
     except IOError:
         if debug:
-            print ("Failed to open request for ", ARCHIVE_DOMAIN + page)
+            print ("Failed to open request for ", current_download_url)
             print()
         return False
 
     if html_file.getcode() == 302:
         if debug:
-            print ("Got HTTP 302 response for ", ARCHIVE_DOMAIN + page)
+            print ("Got HTTP 302 response for ", current_download_url)
             print()
         return False
 
@@ -193,7 +196,7 @@ def archive(page, year, dir_path, debug=False, throttle=1):
 
     if html_string.find("HTTP 302 response") != -1:
         if debug:
-            print ("Got HTTP 302 response for ", ARCHIVE_DOMAIN + page)
+            print ("Got HTTP 302 response for ", current_download_url)
             print()
         return False
 
