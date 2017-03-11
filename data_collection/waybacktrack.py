@@ -32,7 +32,7 @@ def is_url_political_news(url_string):
 
 
 def write_to_file(current_snapshot_flinks):
-    with open("./data_collection/foxnews_links.txt", 'a') as file:
+    with open("foxnews_links.txt", 'a') as file:
         for flink in current_snapshot_flinks:
             if is_url_political_news(flink):
                 file.write(flink[flink.find('http'):])
