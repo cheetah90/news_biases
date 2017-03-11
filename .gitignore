@@ -1,2 +1,3 @@
 .idea/
 data_collection/foxnews_links.txt
+data_collection/__pycache__
