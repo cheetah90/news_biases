@@ -117,7 +117,8 @@ def archive_domain(domain, year, dir_path=DATASET_DIR,
     forward_links = []
 
     # for snapshot in domain_snapshots[:snapshot_age_span]:
-    for snapshot in domain_snapshots[:3]:
+    snapshots_pools = domain_snapshots[:3] if 'foxnews' in domain else domain_snapshots
+    for snapshot in snapshots_pools:
 
         curr_snapshot_flinks = get_forwardlink_snapshots(snapshot)
 
