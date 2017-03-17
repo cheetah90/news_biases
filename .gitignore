@@ -4,3 +4,4 @@ data_collection/__pycache__
 data_collection/foxnews/
 data_collection/cnn/
 __pycache__/
+text_generation/checkpoints/

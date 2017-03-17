@@ -21,7 +21,7 @@ import sys
 import string
 
 #path = get_file('nietzsche.txt', origin="https://s3.amazonaws.com/text-datasets/nietzsche.txt")
-path = "cnn_trump_subset.txt"
+path = "cnn_sub1.txt"
 text = open(path).read().lower()
 #remove punctuations
 table = str.maketrans({key: None for key in string.punctuation})
