@@ -6,8 +6,8 @@ import utils
 
 def main():
     # Change this corpus_flag according to corpus that you are parsing
-    #corpus_flag = 'foxnews'
-    corpus_flag = 'cnn'
+    corpus_flag = 'foxnews'
+    #corpus_flag = 'cnn'
 
 
     all_files = os.listdir(corpus_flag + '/')

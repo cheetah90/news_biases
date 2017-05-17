@@ -3,9 +3,9 @@ import waybacktrack
 
 def main():
     open("foxnews_links.txt", 'w')
-    flinks, duds = waybacktrack.archive_domain(domain='www.foxnews.com/politics.html',
+    waybacktrack.archive_domain(domain='www.foxnews.com/politics.html',
                                                year=2017,
-                                               dir_path='foxnews/2017',
+                                               dir_path='foxnews',
                                                percent=100,
                                                debug=True)
     # rss.cnn.com/rss/cnn_allpolitics.rss

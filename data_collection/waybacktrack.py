@@ -6,6 +6,7 @@ TODO: reiterate entire design!
 import time
 import os
 import urllib.request as request
+from urllib.error import HTTPError
 import random
 import re
 
@@ -32,11 +33,23 @@ def is_url_political_news(url_string):
 
 
 def write_to_file(current_snapshot_flinks):
+    # TODO: remove the duplicates forward links
     with open("foxnews_links.txt", 'a') as file:
         for flink in current_snapshot_flinks:
             if is_url_political_news(flink):
                 file.write(flink[flink.find('http'):])
                 file.write('\n')
+
+
+def parse_calendar_for_domain_snapshots(calendarurl, year, domain):
+    try:
+        content = request.urlopen(calendarurl).read()
+        all_timestamps = re.findall(b'2017\d{10}', content)
+        all_snapshots = ['/web/' + ts.decode("utf-8") + '/http://' + domain for ts in all_timestamps]
+
+        return all_snapshots
+    except HTTPError:
+        print("Errors when trying to get a list of domain snapshots from {}".format(calendarurl))
 
 
 def archive_domain(domain, year, dir_path=DATASET_DIR,
@@ -82,13 +95,17 @@ def archive_domain(domain, year, dir_path=DATASET_DIR,
     if not isinstance(dir_path, str):
         raise Exception("Directory - third arg. - path must be a string.")
 
-    ia_year_url = ARCHIVE_DOMAIN + "/web/" + str(year) + \
-                  "*/http://" + domain + "/"
+    calendarcaptures_url = ARCHIVE_DOMAIN + "/__wb/calendarcaptures?url=http://" + domain + "&selected_year=" + str(year)
 
-    ia_parsed = html.parse(ia_year_url)
+    domain_snapshots = parse_calendar_for_domain_snapshots(calendarcaptures_url, year, domain)
 
-    domain_snapshots = list(set(ia_parsed.xpath('//*[starts-with(@id,"' +
-                                                str(year) + '-")]//a/@href')))
+    # Allen: this is the old method which parse the html page of the waybackmachine.
+    # ia_year_url = ARCHIVE_DOMAIN + "/web/" + str(year) + \
+    #               "*/http://" + domain + "/"
+    #
+    # ia_parsed = html.parse(ia_year_url)
+    #
+    # domain_snapshots = list(set(ia_parsed.xpath('//*[starts-with(@id,"' + str(year) + '-")]//a/@href')))
 
     # snapshot_age_span is a percentage of total snapshots to process from
     # the given year
@@ -131,27 +148,19 @@ def archive_domain(domain, year, dir_path=DATASET_DIR,
 
             print("forward link count: ", len(curr_snapshot_flinks))
 
-    random.shuffle(forward_links)
+        # archive forward links
+        archived_links = []
+        duds = []
+        for forwardlink in forward_links:
+            if is_url_political_news(forwardlink):
+                if archive(forwardlink, year, dir_path, debug, throttle):
+                    archived_links.append(forwardlink)
+                else:
+                    duds.append(forwardlink)
 
-    if debug:
-        print("total number of foward links to download: ", len(forward_links))
-
-    random.shuffle(forward_links)
-
-    # archive forward links
-    archived_links = []
-    duds = []
-    for forwardlink in forward_links:
-        if is_url_political_news(forwardlink):
-            if archive(forwardlink, year, dir_path, debug, throttle):
-                archived_links.append(forwardlink)
-            else:
-                duds.append(forwardlink)
-
-    if debug:
-        print("Number of archived forward links: ", len(archived_links))
-        print("Number of duds: ", len(duds))
-    return archived_links, duds
+        if debug:
+            print("Number of archived forward links: ", len(archived_links))
+            print("Number of duds: ", len(duds))
 
 
 # I know I'm breaking so many rules by not seperating concerns
