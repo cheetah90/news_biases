@@ -216,11 +216,10 @@ def archive(page, year, dir_path, debug=False, throttle=1):
 
     #page_url = html_file.geturl()
     #hack - since I directly donwload the current version. The next if statement does not hold
-    page_url = ARCHIVE_DOMAIN + page
 
 
     if debug:
-        print ("saving ", page_url)
+        print ("saving ", current_download_url)
         print()
 
     try:
