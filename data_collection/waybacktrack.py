@@ -43,9 +43,10 @@ def write_to_file(current_snapshot_flinks):
 
 def parse_calendar_for_domain_snapshots(calendarurl, year, domain):
     try:
-        content = request.urlopen(calendarurl).read()
-        all_timestamps = re.findall(b'2017\d{10}', content)
-        all_snapshots = ['/web/' + ts.decode("utf-8") + '/http://' + domain for ts in all_timestamps]
+        content = request.urlopen(calendarurl).read().decode("utf-8")
+        regex = re.escape(str(year)) + r"\d{10}"
+        all_timestamps = re.findall(regex, content)
+        all_snapshots = ['/web/' + ts + '/http://' + domain for ts in all_timestamps]
 
         return all_snapshots
     except HTTPError:

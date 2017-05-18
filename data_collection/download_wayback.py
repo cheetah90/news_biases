@@ -5,7 +5,7 @@ def main():
     open("foxnews_links.txt", 'w')
     waybacktrack.archive_domain(domain='www.foxnews.com/politics.html',
                                                year=2017,
-                                               dir_path='foxnews',
+                                               dir_path='foxnews/',
                                                percent=100,
                                                debug=True)
     # rss.cnn.com/rss/cnn_allpolitics.rss
